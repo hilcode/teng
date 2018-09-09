@@ -1,0 +1,91 @@
+name:          teng
+synopsis:      A simple template engine
+description:   A template engine that supports type safety and proper indentation.
+version:       0.0.0.1
+github:        hilcode/teng
+copyright:     2018 Hilco Wijbenga
+license:       GPL-3
+author:        Hilco Wijbenga
+maintainer:    Hilco Wijbenga
+category:      Utility
+
+library:
+    dependencies:
+        - base
+    source-dirs: src/main/eta/example
+
+executables:
+    teng:
+        source-dirs: src/main/eta
+        main: Main.hs
+        dependencies:
+            - base
+            - teng
+        ghc-options:
+            - -rtsopts
+            - -threaded
+            - -with-rtsopts=-N
+
+tests:
+    teng-test-suite:
+        source-dirs: src/test/eta
+        main: Main.hs
+        dependencies:
+            - base
+            - teng
+            - tasty
+            - tasty-hspec
+        ghc-options:
+            - -rtsopts
+            - -threaded
+            - -with-rtsopts=-N
+
+extra-source-files:
+    - README.md
+    - COPYRIGHT
+    - LICENSE
+    - package.yaml
+    - stack.yaml
+
+ghc-options:
+    - -Wall
+    # - -Wcompat                  // Unsupported by Eta
+    - -Wincomplete-record-updates
+    - -Wincomplete-uni-patterns
+    # - -Wredundant-constraints   // Unsupported by Eta
+
+default-extensions:
+    - ApplicativeDo
+    - BangPatterns
+    - ConstraintKinds
+    - DataKinds
+    - DefaultSignatures
+    - DeriveFoldable
+    - DeriveFunctor
+    - DeriveGeneric
+    # - DeriveLift                // Unsupported by Eta
+    - DeriveTraversable
+    # - DerivingStrategies        // Unsupported by Eta
+    - EmptyCase
+    - ExistentialQuantification
+    - FlexibleContexts
+    - FlexibleInstances
+    - FunctionalDependencies
+    - GADTs
+    - GeneralizedNewtypeDeriving 
+    - InstanceSigs
+    - KindSignatures
+    - LambdaCase
+    - MultiParamTypeClasses
+    - MultiWayIf
+    - NamedFieldPuns
+    - OverloadedStrings
+    - PatternSynonyms
+    - RankNTypes
+    - ScopedTypeVariables
+    - StandaloneDeriving
+    - TupleSections
+    # - TypeApplications          // Unsupported by Eta
+    - TypeFamilies
+    # - TypeFamilyDependencies    // Unsupported by Eta
+    - TypeOperators
