@@ -1,7 +1,6 @@
--- It is generally a good idea to keep all your business logic in your library
--- and only use it in the executable. Doing so allows others to use what you
--- wrote in their libraries.
-import qualified Example
+module Main where
+
+import qualified Data.Text.IO as TextIO
 
 main :: IO ()
-main = Example.main
+main = TextIO.putStrLn "Teng"

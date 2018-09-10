@@ -12,7 +12,9 @@ category:      Utility
 library:
     dependencies:
         - base
-    source-dirs: src/main/eta/example
+        - megaparsec
+        - text
+    source-dirs: src/main/eta/template
 
 executables:
     teng:
@@ -20,7 +22,9 @@ executables:
         main: Main.hs
         dependencies:
             - base
+            - megaparsec
             - teng
+            - text
         ghc-options:
             - -rtsopts
             - -threaded

@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [ $# -eq 0 ]; then
+	find src/main/eta -type f -name '*.hs' |
+		xargs stack exec -- stylish-haskell -i
+	find src/test/eta -type f -name '*.hs' |
+		xargs stack exec -- stylish-haskell -i
+else
+	stack exec -- stylish-haskell -i "$@"
+fi
