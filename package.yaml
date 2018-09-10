@@ -12,6 +12,7 @@ category:      Utility
 library:
     dependencies:
         - base
+        - containers
         - megaparsec
         - text
     source-dirs: src/main/eta/template
@@ -36,6 +37,7 @@ tests:
         main: Main.hs
         dependencies:
             - base
+            - containers
             - teng
             - tasty
             - tasty-hspec
@@ -84,6 +86,7 @@ default-extensions:
     - MultiWayIf
     - NamedFieldPuns
     - OverloadedStrings
+    - PartialTypeSignatures
     - PatternSynonyms
     - RankNTypes
     - ScopedTypeVariables
