@@ -1,4 +1,4 @@
-module Template (Eol(..), Line(..), Template(..), parse, toText) where
+module Hilcode.Template (Eol(..), Line(..), Template(..), parse, toText) where
 
 import           Control.Applicative
     ((<|>))

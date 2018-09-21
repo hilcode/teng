@@ -1,55 +1,25 @@
-name:          teng
-synopsis:      A simple template engine
-description:   A template engine that supports type safety and proper indentation.
+name:          template
 version:       0.0.0.1
-github:        hilcode/teng
 copyright:     2018 Hilco Wijbenga
 license:       GPL-3
 author:        Hilco Wijbenga
 maintainer:    Hilco Wijbenga
 category:      Utility
 
-executables:
-    teng:
-        source-dirs: src/main/eta
-        main: Main.hs
-        dependencies:
-            - base
-            - file-system
-            # - containers
-            # - dequeue
-            # - directory
-            # - filepath
-            # - megaparsec
-            # - show-text
-            # - teng
-            - text
-        ghc-options:
-            - -rtsopts
-            - -threaded
-            - -with-rtsopts=-N
-
-tests:
-    teng-test-suite:
-        source-dirs: src/test/eta
-        main: Main.hs
-        dependencies:
-            - base
-            - containers
-            - teng
-            - tasty
-            - tasty-hspec
-        ghc-options:
-            - -rtsopts
-            - -threaded
-            - -with-rtsopts=-N
+library:
+    source-dirs: src/main/eta/
+    exposed-modules:
+        Hilcode.Template
+    dependencies:
+        - base
+        - containers
+        - megaparsec
+        - text
 
 extra-source-files:
-    - README.md
     - COPYRIGHT
     - LICENSE
     - package.yaml
-    - stack.yaml
 
 ghc-options:
     - -Wall
