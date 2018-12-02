@@ -16,11 +16,12 @@ executables:
         dependencies:
             - base
             - file-system
-            # - containers
+            - containers
             # - dequeue
             # - directory
             # - filepath
             # - megaparsec
+            - mtl
             # - show-text
             # - teng
             - text
