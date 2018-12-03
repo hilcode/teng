@@ -18,10 +18,10 @@ import Data.Text.IO as DataTextIO
 import System.IO (IO)
 
 main :: IO ()
-main = DataTextIO.putStr $ DataText.concat $ runReader (templateMapToText templateTwo "'" "'\n") localEnvironment
+main = DataTextIO.putStr $ DataText.concat $ runReader (templateMapToText templateThree "'" "'\n") localEnvironment
 
 localEnvironment :: Environment
-localEnvironment = Environment (insertTemplates [templateOne, templateTwo] DataMap.empty)
+localEnvironment = Environment (insertTemplates [templateOne, templateTwo, templateThree] DataMap.empty)
 
 insertTemplate :: DataMap.Map TemplateName Template -> Template -> DataMap.Map TemplateName Template
 insertTemplate map template
@@ -56,6 +56,19 @@ templateTwo
        , SimpleTemplateLine [ Verbatim "Last line" ]
        ]
 
+templateThreeName :: TemplateName
+templateThreeName
+    = TemplateName "template-three"
+
+templateThree :: Template
+templateThree
+    = Template
+       templateThreeName
+       [ SimpleTemplateLine [ Verbatim "-----" ]
+       , TemplateInvocation [ Verbatim "    " ] templateTwoName []
+       , SimpleTemplateLine [ Verbatim "=====" ]
+       ]
+
 
 data Environment
     = Environment
@@ -72,7 +85,7 @@ class ToText environment a where
 class ToTextList environment a where
     toTextList :: a -> Reader environment [Text]
 
-class HasName a where
+class HasTemplateName a where
     name :: a -> TemplateName
 
 newtype TemplateName
@@ -119,7 +132,7 @@ instance ToTextList Environment [TemplateLine] where
 data Template
     = Template !TemplateName ![TemplateLine]
 
-instance HasName Template where
+instance HasTemplateName Template where
     name (Template templateName _)
         = templateName
 
