@@ -8,7 +8,6 @@ import Data.Foldable (concat)
 import Data.Function (($))
 import Data.Functor (fmap)
 import Data.List (foldl')
-import Data.Map.Strict ((!))
 import qualified Data.Map.Strict as DataMap
 import Data.Monoid ((<>))
 import Data.Ord (Ord)
@@ -17,11 +16,28 @@ import qualified Data.Text as DataText
 import Data.Text.IO as DataTextIO
 import System.IO (IO)
 
+import Prelude (Int)
+
 main :: IO ()
-main = DataTextIO.putStr $ DataText.concat $ runReader (templateMapToText templateThree "'" "'\n") localEnvironment
+main = DataTextIO.putStr $ DataText.concat $ templateMapToText localEnvironment templateThree "'" "'\n"
+
+class HasAvailableTemplates a where
+    get_available_templates :: a -> AvailableTemplates
+
+class HasScope a where
+    get_scope :: a -> Scope
+
+data Environment
+    = Environment AvailableTemplates Scope
+
+instance HasAvailableTemplates Environment where
+    get_available_templates (Environment availableTemplates _) = availableTemplates
+
+instance HasScope Environment where
+    get_scope (Environment _ scope) = scope
 
 localEnvironment :: Environment
-localEnvironment = Environment (insertTemplates [templateOne, templateTwo, templateThree] DataMap.empty)
+localEnvironment = Environment (AvailableTemplates (insertTemplates [templateOne, templateTwo, templateThree] DataMap.empty)) (Scope [])
 
 insertTemplate :: DataMap.Map TemplateName Template -> Template -> DataMap.Map TemplateName Template
 insertTemplate map template
@@ -69,21 +85,27 @@ templateThree
        , SimpleTemplateLine [ Verbatim "=====" ]
        ]
 
+data AvailableTemplates
+    = AvailableTemplates (DataMap.Map TemplateName Template)
 
-data Environment
-    = Environment
-        (DataMap.Map TemplateName Template)
+(!) :: AvailableTemplates -> TemplateName -> Template
+(!) (AvailableTemplates map) templateName = (DataMap.!) map templateName
 
-extractTemplate :: Environment -> TemplateName -> Template
-extractTemplate (Environment map) templateName
-    = map ! templateName
+data Variable
+    = IntVariable !IntVariableName !Int
 
+data Scope
+    = Scope [Variable]
+
+extractTemplate :: HasAvailableTemplates a => a -> TemplateName -> Template
+extractTemplate env templateName
+    = (get_available_templates env) ! templateName
 
 class ToText environment a where
-    toText :: a -> Reader environment Text
+    toText :: HasAvailableTemplates environment => HasScope environment => environment -> a -> Text
 
 class ToTextList environment a where
-    toTextList :: a -> Reader environment [Text]
+    toTextList :: HasAvailableTemplates environment => HasScope environment => environment -> a -> [Text]
 
 class HasTemplateName a where
     name :: a -> TemplateName
@@ -93,40 +115,38 @@ newtype TemplateName
       deriving
         (Eq, Ord)
 
+newtype IntVariableName
+    = IntVariableName Text
 
 data TemplateLineElement
     = Verbatim !Text
+    | IntValue !Variable
 
-instance ToText Environment TemplateLineElement where
-    toText (Verbatim text)
-        = return text
+instance ToText env TemplateLineElement where
+    toText _ (Verbatim text)
+        = text
 
-instance ToText Environment [TemplateLineElement] where
-    toText templateLineElements
-        = do
-            lineElements <- sequence $ toText `fmap` templateLineElements
-            return $ foldl' (<>) "" lineElements
+instance ToText env [TemplateLineElement] where
+    toText environment templateLineElements
+        = foldl' (<>) "" $ (toText environment) `fmap` templateLineElements
 
 
 data TemplateLine
     = SimpleTemplateLine ![TemplateLineElement]
     | TemplateInvocation ![TemplateLineElement] !TemplateName ![TemplateLineElement]
 
-instance ToTextList Environment TemplateLine where
-    toTextList (SimpleTemplateLine templateLineElements)
-        = sequence [toText templateLineElements]
-    toTextList (TemplateInvocation prefixTemplateLineElements templateName suffixTemplateLineElements)
-        = do
-            prefix <- toText prefixTemplateLineElements
-            suffix <- toText suffixTemplateLineElements
-            environment <- ask
-            templateMapToText (extractTemplate environment templateName) prefix suffix
+instance ToTextList env TemplateLine where
+    toTextList environment (SimpleTemplateLine templateLineElements)
+        = [toText environment templateLineElements]
+    toTextList environment (TemplateInvocation prefixTemplateLineElements templateName suffixTemplateLineElements)
+        = templateMapToText environment (extractTemplate environment templateName) prefix suffix
+          where
+            prefix = toText environment prefixTemplateLineElements
+            suffix = toText environment suffixTemplateLineElements
 
-instance ToTextList Environment [TemplateLine] where
-    toTextList templateLines
-        = do
-            lines <- sequence $ toTextList `fmap` templateLines
-            return $ concat $ lines
+instance ToTextList env [TemplateLine] where
+    toTextList environment templateLines
+        = concat $ (toTextList environment) `fmap` templateLines
 
 
 data Template
@@ -136,8 +156,8 @@ instance HasTemplateName Template where
     name (Template templateName _)
         = templateName
 
-templateMapToText :: Template -> Text -> Text -> Reader Environment [Text]
-templateMapToText (Template _ templateLines) prefix suffix
-    = do
-        lines <- toTextList templateLines
-        return $ (\text -> prefix <> text <> suffix) `fmap` lines
+templateMapToText :: HasAvailableTemplates environment => HasScope environment => environment -> Template -> Text -> Text -> [Text]
+templateMapToText environment (Template _ templateLines) prefix suffix
+    = (\text -> prefix <> text <> suffix) `fmap` lines
+      where
+        lines = toTextList environment templateLines
