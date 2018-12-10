@@ -16,10 +16,22 @@ import qualified Data.Text as DataText
 import Data.Text.IO as DataTextIO
 import System.IO (IO)
 
-import Prelude (Int)
+import Prelude (Bool, Int)
 
 main :: IO ()
 main = DataTextIO.putStr $ DataText.concat $ templateMapToText localEnvironment templateThree "'" "'\n"
+
+class IsMap map key value where
+    (!) :: Ord key => map -> key -> value
+
+instance IsMap (DataMap.Map key value) key value where
+    (!) = (DataMap.!)
+
+data AvailableTemplates
+    = AvailableTemplates (DataMap.Map TemplateName Template)
+
+instance IsMap AvailableTemplates TemplateName Template where
+    (!) (AvailableTemplates map) templateName = map ! templateName
 
 class HasAvailableTemplates a where
     get_available_templates :: a -> AvailableTemplates
@@ -85,14 +97,11 @@ templateThree
        , SimpleTemplateLine [ Verbatim "=====" ]
        ]
 
-data AvailableTemplates
-    = AvailableTemplates (DataMap.Map TemplateName Template)
-
-(!) :: AvailableTemplates -> TemplateName -> Template
-(!) (AvailableTemplates map) templateName = (DataMap.!) map templateName
-
 data Variable
     = IntVariable !IntVariableName !Int
+    | TextVariable !TextVariableName !Text
+    | BoolVariable !BoolVariableName !Bool
+    | AlgebraicDataType ![Variable]
 
 data Scope
     = Scope [Variable]
@@ -117,6 +126,12 @@ newtype TemplateName
 
 newtype IntVariableName
     = IntVariableName Text
+
+newtype TextVariableName
+    = TextVariableName Text
+
+newtype BoolVariableName
+    = BoolVariableName Text
 
 data TemplateLineElement
     = Verbatim !Text
