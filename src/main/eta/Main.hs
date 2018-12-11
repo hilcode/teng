@@ -37,6 +37,9 @@ data AvailableTemplates
 instance IsMap AvailableTemplates TemplateName Template where
     (!) (AvailableTemplates map) templateName = map ! templateName
 
+instance IsMap Scope VariableName Variable where
+    (!) (Scope map) templateName = map ! templateName
+
 class HasAvailableTemplates a where
     get_available_templates :: a -> AvailableTemplates
 
