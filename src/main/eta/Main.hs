@@ -1,4 +1,6 @@
 {-# LANGUAGE NoImplicitPrelude #-}
+{-# LANGUAGE GADTSyntax        #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
@@ -8,6 +10,7 @@ import Data.Foldable (concat)
 import Data.Function (($))
 import Data.Functor (fmap)
 import Data.List (foldl')
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as DataMap
 import Data.Monoid ((<>))
 import Data.Ord (Ord)
@@ -15,8 +18,9 @@ import Data.Text (Text)
 import qualified Data.Text as DataText
 import Data.Text.IO as DataTextIO
 import System.IO (IO)
+import Text.Show (show)
 
-import Prelude (Bool, Int)
+import Prelude (Bool, Int, error, undefined)
 
 main :: IO ()
 main = DataTextIO.putStr $ DataText.concat $ templateMapToText localEnvironment templateThree "'" "'\n"
@@ -49,7 +53,7 @@ instance HasScope Environment where
     get_scope (Environment _ scope) = scope
 
 localEnvironment :: Environment
-localEnvironment = Environment (AvailableTemplates (insertTemplates [templateOne, templateTwo, templateThree] DataMap.empty)) (Scope [])
+localEnvironment = Environment (AvailableTemplates (insertTemplates [templateOne, templateTwo, templateThree] DataMap.empty)) (Scope DataMap.empty)
 
 insertTemplate :: DataMap.Map TemplateName Template -> Template -> DataMap.Map TemplateName Template
 insertTemplate map template
@@ -97,14 +101,23 @@ templateThree
        , SimpleTemplateLine [ Verbatim "=====" ]
        ]
 
+data Value
+    = IntValue Int
+    | TextValue Text
+    | BoolValue Bool
+    | ListValue [Value]
+    | MapValue (Map Text Value)
+
 data Variable
-    = IntVariable !IntVariableName !Int
-    | TextVariable !TextVariableName !Text
-    | BoolVariable !BoolVariableName !Bool
-    | AlgebraicDataType ![Variable]
+    = IntVariable VariableName Value
+    | TextVariable VariableName Value
+    | BoolVariable VariableName Value
+    | ListVariable VariableName Value
+    | MapVariable VariableName Value
+    | AdtVariable VariableName (Map Text Variable)
 
 data Scope
-    = Scope [Variable]
+    = Scope (Map VariableName Variable)
 
 extractTemplate :: HasAvailableTemplates a => a -> TemplateName -> Template
 extractTemplate env templateName
@@ -124,22 +137,80 @@ newtype TemplateName
       deriving
         (Eq, Ord)
 
-newtype IntVariableName
-    = IntVariableName Text
-
-newtype TextVariableName
-    = TextVariableName Text
-
-newtype BoolVariableName
-    = BoolVariableName Text
+newtype VariableName
+    = VariableName Text
 
 data TemplateLineElement
-    = Verbatim !Text
-    | IntValue !Variable
+    = Verbatim Text
+    | Dynamic Variable
+
+instance ToText env Value where
+    toText _ (IntValue intValue)
+        = DataText.pack (show intValue)
+    toText _ (BoolValue boolValue)
+        = DataText.pack (show boolValue)
+    toText _ (TextValue textValue)
+        = textValue
+    toText environment (ListValue values)
+        = "[" <> foldl' (<>) "" ((toText environment :: Value -> Text) `fmap` values) <> "]"
+    toText environment (MapValue map)
+        = "{" <> (foldl' (<>) "" valuesAsText) <> "}"
+          where
+            keys = DataMap.keys map
+            toValue :: IsMap (Map Text Value) Text Value => Text -> Value
+            toValue = (!) map
+            values = toValue `fmap` keys
+            valuesAsText = (toText environment) `fmap` values
+
+instance ToText env (Map Text Value) where
+    toText environment map
+        = "{" <> DataText.intercalate ", " keyValues <> "}"
+          where
+            keys = DataMap.keys map
+            toValue :: IsMap (Map Text Value) Text Value => Text -> Value
+            toValue = (!) map
+            keyValues :: [Text]
+            keyValues = [(key <> " -> " <> toText environment (toValue key)) | key <- keys]
+
+instance ToText env Variable where
+    toText environment (IntVariable _ value@(IntValue _))
+        = toText environment value
+    toText _ (IntVariable _ _)
+        = error "This should never happen: an IntVariable must have an IntValue."
+    toText environment (BoolVariable _ value@(BoolValue _))
+        = toText environment value
+    toText _ (BoolVariable _ _)
+        = error "This should never happen: a BoolVariable must have a BoolValue."
+    toText environment (TextVariable _ value@(TextValue _))
+        = toText environment value
+    toText _ (TextVariable _ _)
+        = error "This should never happen: a TextVariable must have a TextValue."
+    toText environment (ListVariable _ value@(ListValue _))
+        = toText environment value
+    toText _ (ListVariable _ _)
+        = error "This should never happen: a ListVariable must have a ListValue."
+    toText environment (MapVariable _ value@(MapValue _))
+        = toText environment value
+    toText _ (MapVariable _ _)
+        = error "This should never happen: a MapVariable must have a MapValue."
+    toText environment (AdtVariable _ map)
+        = toText environment map
+
+instance ToText env (Map Text Variable) where
+    toText environment map
+        = "{" <> DataText.intercalate ", " keyValues <> "}"
+          where
+            keys = DataMap.keys map
+            toVariable :: IsMap (Map Text Variable) Text Variable => Text -> Variable
+            toVariable = (!) map
+            keyValues :: [Text]
+            keyValues = [(key <> " -> " <> toText environment (toVariable key)) | key <- keys]
 
 instance ToText env TemplateLineElement where
     toText _ (Verbatim text)
         = text
+    toText environment (Dynamic variable)
+        = toText environment variable
 
 instance ToText env [TemplateLineElement] where
     toText environment templateLineElements
