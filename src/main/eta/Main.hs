@@ -71,6 +71,7 @@ templateOne :: Template
 templateOne
     = Template
        templateOneName
+       (Scope DataMap.empty)
        [ SimpleTemplateLine [ Verbatim "Hello", Verbatim " ", Verbatim "World!" ]
        , SimpleTemplateLine [ Verbatim "Goodbye", Verbatim " ", Verbatim "Cruel", Verbatim " ", Verbatim "World!" ]
        ]
@@ -83,6 +84,7 @@ templateTwo :: Template
 templateTwo
     = Template
        templateTwoName
+       (Scope DataMap.empty)
        [ SimpleTemplateLine [ Verbatim "First line" ]
        , TemplateInvocation [ Verbatim "    " ] templateOneName []
        , SimpleTemplateLine [ Verbatim "Last line" ]
@@ -96,6 +98,7 @@ templateThree :: Template
 templateThree
     = Template
        templateThreeName
+       (Scope DataMap.empty)
        [ SimpleTemplateLine [ Verbatim "-----" ]
        , TemplateInvocation [ Verbatim "    " ] templateTwoName []
        , SimpleTemplateLine [ Verbatim "=====" ]
@@ -236,14 +239,14 @@ instance ToTextList env [TemplateLine] where
 
 
 data Template
-    = Template !TemplateName ![TemplateLine]
+    = Template !TemplateName !Scope ![TemplateLine]
 
 instance HasTemplateName Template where
-    name (Template templateName _)
+    name (Template templateName _ _)
         = templateName
 
 templateMapToText :: HasAvailableTemplates environment => HasScope environment => environment -> Template -> Text -> Text -> [Text]
-templateMapToText environment (Template _ templateLines) prefix suffix
+templateMapToText environment (Template _ _ templateLines) prefix suffix
     = (\text -> prefix <> text <> suffix) `fmap` lines
       where
         lines = toTextList environment templateLines
