@@ -1,0 +1,6 @@
+cradle:
+    stack:
+      - path: ./src/main/haskell
+        component: "teng:lib"
+      - path: ./src/test/haskell
+        component: "teng:test:test"

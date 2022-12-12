@@ -1,0 +1,160 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.34.4.
+--
+-- see: https://github.com/sol/hpack
+
+name:           teng
+version:        0.0.0.1
+category:       Utility
+homepage:       https://github.com/hilcode/teng#readme
+bug-reports:    https://github.com/hilcode/teng/issues
+author:         Hilco Wijbenga
+maintainer:     Hilco Wijbenga
+copyright:      2022 Hilco Wijbenga
+license:        GPL-3
+build-type:     Simple
+extra-source-files:
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/hilcode/teng
+
+library
+  exposed-modules:
+      Hilcode.DataType
+      Hilcode.DataType.Internal
+      Hilcode.FieldName
+      Hilcode.FieldName.Internal
+      Hilcode.JsonParser
+      Hilcode.JsonValue
+      Hilcode.JsonValue.Internal
+      Hilcode.Key
+      Hilcode.Misc
+      Hilcode.Parser
+  other-modules:
+      Main
+      Paths_teng
+  hs-source-dirs:
+      src/main/haskell
+  default-extensions:
+      BangPatterns
+      DataKinds
+      DeriveGeneric
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NoMonomorphismRestriction
+      OverloadedStrings
+      ScopedTypeVariables
+      Strict
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wtabs -Wno-name-shadowing
+  build-depends:
+      base
+    , containers
+    , hedgehog
+    , hedgehog-classes
+    , hspec
+    , hw-hspec-hedgehog
+    , text
+    , vector
+  default-language: Haskell2010
+
+executable teng
+  main-is: Main.hs
+  other-modules:
+      Hilcode.DataType
+      Hilcode.DataType.Internal
+      Hilcode.FieldName
+      Hilcode.FieldName.Internal
+      Hilcode.JsonParser
+      Hilcode.JsonValue
+      Hilcode.JsonValue.Internal
+      Hilcode.Key
+      Hilcode.Misc
+      Hilcode.Parser
+      Paths_teng
+  hs-source-dirs:
+      src/main/haskell
+  default-extensions:
+      BangPatterns
+      DataKinds
+      DeriveGeneric
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NoMonomorphismRestriction
+      OverloadedStrings
+      ScopedTypeVariables
+      Strict
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wtabs -Wno-name-shadowing
+  build-depends:
+      base
+    , containers
+    , hedgehog
+    , hedgehog-classes
+    , hspec
+    , hw-hspec-hedgehog
+    , teng
+    , text
+    , vector
+  default-language: Haskell2010
+
+test-suite test
+  type: exitcode-stdio-1.0
+  main-is: Spec.hs
+  other-modules:
+      Hilcode.DataType.InternalSpec
+      Hilcode.FieldName.InternalSpec
+      Hilcode.JsonParserSpec
+      Hilcode.MiscSpec
+  hs-source-dirs:
+      src/test/haskell
+  default-extensions:
+      BangPatterns
+      DataKinds
+      DeriveGeneric
+      FlexibleContexts
+      FlexibleInstances
+      FunctionalDependencies
+      GADTs
+      InstanceSigs
+      KindSignatures
+      LambdaCase
+      MultiParamTypeClasses
+      MultiWayIf
+      NoMonomorphismRestriction
+      OverloadedStrings
+      ScopedTypeVariables
+      Strict
+      TupleSections
+      UndecidableInstances
+  ghc-options: -Werror -Wall -Wcompat -Wincomplete-record-updates -Wincomplete-uni-patterns -Wredundant-constraints -Wtabs -Wno-name-shadowing
+  build-depends:
+      base
+    , containers
+    , hedgehog
+    , hedgehog-classes
+    , hspec
+    , hw-hspec-hedgehog
+    , teng
+    , text
+    , vector
+  default-language: Haskell2010
